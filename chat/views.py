@@ -1,16 +1,9 @@
 from django.contrib.auth.models import User
-# from django.http.response import JsonResponse, HttpResponse
-# from django.shortcuts import render, redirect
-# from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
-# from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from chat.models import User, Group, UserGroupMapping, Message
-# from chat.forms import SignUpForm
-# from chat.serializers import MessageSerializer, UserSerializer
-
 
 
 @api_view(['GET', 'POST',])
