@@ -10,9 +10,10 @@ from chat.models import User, Group, UserGroupMapping, Message
 def chat_view(request):
     if not request.user.is_authenticated:
         return Response(status=status.HTTP_403_FORBIDDEN, data={'error': 'You are not authorised'})
+
     user_groups = UserGroupMapping.objects.filter(user=request.user).values_list('group', flat=True)
-    group_messages = Message.objects.filter(group__in=user_groups).order_by('-timestamp').values('sender__username', 'group__group_name', 'message')
-    personal_messages = Message.objects.filter(Q(receiver=request.user) | (Q(Q(sender=request.user)&Q(group=None)))).order_by('-timestamp').values('sender__username', 'message')
+    group_messages = Message.objects.filter(group__in=user_groups).order_by('timestamp').values('sender__username', 'group__group_name', 'message')
+    personal_messages = Message.objects.filter(Q(receiver=request.user) | (Q(Q(sender=request.user)&Q(group=None)))).order_by('timestamp').values('sender__username', 'message')
     messages = {}
     group_messages_list = []
     personal_messages_list = []
@@ -85,8 +86,13 @@ def send_message_to_user_or_group(request):
             else:
                 try:
                     group = Group.objects.get(group_name=to_group)
-                except DoesNotExist:
+                except Group.DoesNotExist:
                     return Response(status=status.HTTP_400_BAD_REQUEST, data={'error': 'The group does not exist.'})
+                #check if the sender is a member of he group to send a message
+                try:
+                    UserGroupMapping.objects.get(user=request.user, group=group)
+                except UserGroupMapping.DoesNotExist:
+                    return Response(status=status.HTTP_400_BAD_REQUEST, data={'error': 'You cannot send a message to a group you are not a member of.'})
                 Message.objects.create(sender=request.user, group=group, message=message)
                 return Response(status=status.HTTP_200_OK, data={'response': 'message sent to the group {} successfully.'.format(to_group)})
 
