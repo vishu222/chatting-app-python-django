@@ -1,1 +1,1 @@
-# chatting-app-python-django
+# chatting-app-using-python-with-django
